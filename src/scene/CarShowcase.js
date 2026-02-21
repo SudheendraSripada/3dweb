@@ -92,17 +92,25 @@ export class CarShowcase {
     loader.setDRACOLoader(dracoLoader);
 
     let root;
-    try {
-      const gltf = await loader.loadAsync(car.modelUrl);
-      root = gltf.scene;
-      if (gltf.animations.length > 0) {
-        const mixer = new THREE.AnimationMixer(root);
-        const clip = gltf.animations[0];
-        const action = mixer.clipAction(clip);
-        action.play();
-        this.mixers = [mixer];
+    const candidateUrls = car.modelUrls?.length ? car.modelUrls : [car.modelUrl].filter(Boolean);
+    for (const url of candidateUrls) {
+      try {
+        const gltf = await loader.loadAsync(url);
+        root = gltf.scene;
+        if (gltf.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(root);
+          const clip = gltf.animations[0];
+          const action = mixer.clipAction(clip);
+          action.play();
+          this.mixers = [mixer];
+        }
+        break;
+      } catch {
+        // Try next candidate URL (e.g., .gltf then .glb) before falling back.
       }
-    } catch {
+    }
+
+    if (!root) {
       root = this.createFallbackCar();
     }
 

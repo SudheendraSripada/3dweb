@@ -1,4 +1,5 @@
 # Local model placeholders
 
 This folder intentionally contains local GLTF assets so model loading works out of the box.
-Replace these placeholder `.gltf` files with production Mustang scans/exports while keeping the same filenames used in `src/scene/config.js`.
+The app now tries each car's `modelUrls` in order (`.gltf` first, then `.glb`) to reduce merge friction between branches that referenced different extensions.
+Replace these placeholder assets with production Mustang scans/exports while keeping the same base filenames.

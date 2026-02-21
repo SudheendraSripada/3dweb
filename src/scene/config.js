@@ -3,7 +3,7 @@ export const CARS = [
     id: 'mustang',
     name: 'Mustang',
     tagline: 'Iconic V8 muscle tuned for modern precision.',
-    modelUrl: '/models/mustang-draco.gltf',
+    modelUrls: ['/models/mustang-draco.gltf', '/models/mustang-draco.glb'],
     specs: {
       Horsepower: '480 hp',
       Torque: '415 lb-ft',
@@ -15,7 +15,7 @@ export const CARS = [
     id: 'shelby-gt500',
     name: 'Mustang Shelby GT500',
     tagline: 'Supercharged brutality with relentless launch character.',
-    modelUrl: '/models/shelby-gt500-draco.gltf',
+    modelUrls: ['/models/shelby-gt500-draco.gltf', '/models/shelby-gt500-draco.glb'],
     specs: {
       Horsepower: '760 hp',
       Torque: '625 lb-ft',
@@ -27,7 +27,7 @@ export const CARS = [
     id: 'gtd',
     name: 'Mustang GTD',
     tagline: 'Street legal race engineering with elite aerodynamic control.',
-    modelUrl: '/models/gtd-draco.gltf',
+    modelUrls: ['/models/gtd-draco.gltf', '/models/gtd-draco.glb'],
     specs: {
       Horsepower: '800+ hp',
       Torque: '677 lb-ft',
@@ -39,7 +39,7 @@ export const CARS = [
     id: 'gt350r',
     name: 'Mustang GT350R',
     tagline: 'Flat-plane fury designed for high-rev corner attacks.',
-    modelUrl: '/models/gt350r-draco.gltf',
+    modelUrls: ['/models/gt350r-draco.gltf', '/models/gt350r-draco.glb'],
     specs: {
       Horsepower: '526 hp',
       Torque: '429 lb-ft',
@@ -51,7 +51,7 @@ export const CARS = [
     id: 'dark-horse',
     name: 'Mustang Dark Horse',
     tagline: 'Track-capable confidence wrapped in stealth aggression.',
-    modelUrl: '/models/dark-horse-draco.gltf',
+    modelUrls: ['/models/dark-horse-draco.gltf', '/models/dark-horse-draco.glb'],
     specs: {
       Horsepower: '500 hp',
       Torque: '418 lb-ft',
