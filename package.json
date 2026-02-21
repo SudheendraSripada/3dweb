@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check:conflicts": "bash scripts/check-conflicts.sh"
+    "check:conflicts": "bash scripts/check-conflicts.sh",
+    "check:core": "bash scripts/check-core.sh"
   },
   "dependencies": {
     "gsap": "^3.12.5",

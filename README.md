@@ -33,3 +33,12 @@ Run this before opening/updating your PR to make sure no merge markers were comm
 ```bash
 npm run check:conflicts
 ```
+
+## Core file validation
+
+Run these before updating your PR (covers `index.html`, `src/main.js`, `src/scene/CarShowcase.js`, `src/scene/config.js` workflows):
+
+```bash
+npm run check:conflicts
+npm run check:core
+```
