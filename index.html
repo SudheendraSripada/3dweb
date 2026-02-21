@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mustang Cinematic Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <section class="hero" id="hero">
+        <div class="hero__overlay"></div>
+        <div class="hero__content">
+          <p class="eyebrow">Ford Performance</p>
+          <h1 class="title">Cinematic Mustang Studio</h1>
+          <p class="subtitle">Choose your machine and unveil every detail in a scroll-driven reveal.</p>
+
+          <div class="car-picker" id="car-picker"></div>
+        </div>
+      </section>
+
+      <section class="viewer" id="viewer">
+        <div class="hud">
+          <h2 id="car-name">Mustang</h2>
+          <p id="car-tagline">Select a model to begin reveal sequence.</p>
+        </div>
+        <canvas id="showcase-canvas" aria-label="3D Mustang showcase"></canvas>
+      </section>
+
+      <section class="story" id="story">
+        <article class="story-panel" data-part="engine">
+          <h3>Engine</h3>
+          <p>Twin-airflow intake architecture and aggressive thermal management for consistent output.</p>
+        </article>
+        <article class="story-panel" data-part="wheels">
+          <h3>Wheels</h3>
+          <p>Forged wheels with race compounds maximize grip and rotational precision under load.</p>
+        </article>
+        <article class="story-panel" data-part="body">
+          <h3>Body</h3>
+          <p>Aero-focused bodywork balances drag and downforce for relentless track confidence.</p>
+        </article>
+        <article class="story-panel" data-part="interior">
+          <h3>Interior</h3>
+          <p>Driver-first cockpit combines digital telemetry with tactile motorsport ergonomics.</p>
+        </article>
+      </section>
+
+      <section class="specs" id="specs">
+        <div class="specs__content">
+          <p class="eyebrow">Performance Data</p>
+          <h2 id="specs-name">Mustang GTD</h2>
+          <div class="spec-grid" id="spec-grid"></div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
