@@ -21,16 +21,16 @@ export class CarShowcase {
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     this.clock = new THREE.Clock();
     this.mixers = [];
     this.currentCar = null;
-    this.revealTween = null;
+    this.revealState = { progress: 0 };
 
     this.initScene();
+    this.onResize();
     this.initScrollTimeline();
     this.animate();
     window.addEventListener('resize', () => this.onResize());
@@ -71,8 +71,7 @@ export class CarShowcase {
     this.controls.minDistance = 2.2;
     this.controls.maxDistance = 7;
 
-    const envLoader = new RGBELoader();
-    envLoader
+    new RGBELoader()
       .loadAsync('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr')
       .then((hdr) => {
         hdr.mapping = THREE.EquirectangularReflectionMapping;
@@ -82,9 +81,9 @@ export class CarShowcase {
   }
 
   async loadCar(car) {
-    if (this.currentCar) {
-      this.scene.remove(this.currentCar);
-    }
+    if (this.currentCar) this.scene.remove(this.currentCar);
+    this.controls.enabled = false;
+    this.mixers = [];
 
     const loader = new GLTFLoader();
     const dracoLoader = new DRACOLoader();
@@ -93,26 +92,24 @@ export class CarShowcase {
 
     let root;
     const candidateUrls = car.modelUrls?.length ? car.modelUrls : [car.modelUrl].filter(Boolean);
+
     for (const url of candidateUrls) {
       try {
         const gltf = await loader.loadAsync(url);
         root = gltf.scene;
         if (gltf.animations.length > 0) {
           const mixer = new THREE.AnimationMixer(root);
-          const clip = gltf.animations[0];
-          const action = mixer.clipAction(clip);
+          const action = mixer.clipAction(gltf.animations[0]);
           action.play();
           this.mixers = [mixer];
         }
         break;
       } catch {
-        // Try next candidate URL (e.g., .gltf then .glb) before falling back.
+        // Try next URL.
       }
     }
 
-    if (!root) {
-      root = this.createFallbackCar();
-    }
+    if (!root) root = this.createFallbackCar();
 
     root.position.set(0, -0.55, 0);
     root.traverse((child) => {
@@ -122,14 +119,16 @@ export class CarShowcase {
       }
     });
 
-    const cloth = this.createClothOverlay();
-    root.add(cloth);
+    this.cloth = this.createClothOverlay();
+    root.add(this.cloth);
 
     this.currentCar = root;
-    this.cloth = cloth;
     this.scene.add(root);
 
-    this.playRevealTimeline();
+    this.revealState.progress = 0;
+    this.applyClothReveal();
+    this.scrollTl.progress(0);
+    ScrollTrigger.refresh();
   }
 
   createFallbackCar() {
@@ -147,7 +146,6 @@ export class CarShowcase {
     );
     cabin.position.set(0.1, 0.8, 0);
     group.add(cabin);
-
     return group;
   }
 
@@ -169,8 +167,17 @@ export class CarShowcase {
     return cloth;
   }
 
+  applyClothReveal() {
+    if (!this.cloth) return;
+    const p = this.revealState.progress;
+    this.cloth.visible = p < 0.98;
+    this.cloth.scale.set(1.08 - p * 0.12, 0.55 - p * 0.47, 0.82 + p * 0.08);
+    this.cloth.position.y = 0.35 + p * 1.0;
+    this.cloth.material.opacity = Math.max(0, 0.95 - p * 1.1);
+  }
+
   initScrollTimeline() {
-    const tl = gsap.timeline({
+    this.scrollTl = gsap.timeline({
       scrollTrigger: {
         trigger: '#viewer',
         start: 'top top',
@@ -180,7 +187,9 @@ export class CarShowcase {
       },
     });
 
-    tl.to(this.keyLight, { intensity: 95, duration: 1.2 }, 0)
+    this.scrollTl
+      .to(this.revealState, { progress: 1, duration: 1.1, ease: 'none', onUpdate: () => this.applyClothReveal() }, 0)
+      .to(this.keyLight, { intensity: 95, duration: 1.2 }, 0)
       .to(this.camera.position, { z: 3.4, x: 1.35, duration: 1.6 }, 0)
       .to(this.rimLight.position, { x: -1.2, z: -0.8, duration: 1.4 }, 0.2)
       .to(
@@ -188,7 +197,7 @@ export class CarShowcase {
         {
           duration: 2,
           onUpdate: () => {
-            const progress = tl.progress();
+            const progress = this.scrollTl.progress();
             const index = Math.min(PART_SEQUENCE.length - 1, Math.floor(progress * PART_SEQUENCE.length));
             const part = PART_SEQUENCE[index];
             this.onPartChange(part);
@@ -201,33 +210,13 @@ export class CarShowcase {
       .to('.story-panel', { opacity: 1, y: 0, stagger: 0.1, duration: 0.4 }, 0.4)
       .add(() => {
         this.controls.enabled = true;
-      }, 1.9);
+      }, 1.15);
   }
 
   focusPart(part, progress) {
     const pos = PART_FOCUS[part];
     if (!pos) return;
-
-    const blend = 0.08;
-    this.controls.target.lerp(new THREE.Vector3(pos.x, pos.y, pos.z * (0.9 + progress * 0.3)), blend);
-  }
-
-  playRevealTimeline() {
-    if (!this.cloth) return;
-    if (this.revealTween) this.revealTween.kill();
-
-    this.cloth.visible = true;
-    this.cloth.scale.set(1.08, 0.55, 0.82);
-    this.cloth.material.opacity = 0.95;
-
-    this.revealTween = gsap
-      .timeline()
-      .to(this.cloth.scale, { y: 0.08, x: 0.96, z: 0.9, duration: 1.4, ease: 'power2.inOut' })
-      .to(this.cloth.position, { y: 1.3, duration: 1.3, ease: 'power2.out' }, 0.3)
-      .to(this.cloth.material, { opacity: 0, duration: 0.8, ease: 'power2.out' }, 0.8)
-      .add(() => {
-        this.cloth.visible = false;
-      });
+    this.controls.target.lerp(new THREE.Vector3(pos.x, pos.y, pos.z * (0.9 + progress * 0.3)), 0.08);
   }
 
   animate() {
@@ -238,12 +227,12 @@ export class CarShowcase {
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(tick);
     };
-
     tick();
   }
 
   onResize() {
     const { clientWidth, clientHeight } = this.canvas;
+    if (!clientWidth || !clientHeight) return;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight, false);

@@ -1,4 +1,3 @@
-import './style.css';
 import { CarShowcase } from './scene/CarShowcase.js';
 import { CARS } from './scene/config.js';
 
