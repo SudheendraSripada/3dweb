@@ -25,3 +25,11 @@ git push -u origin feat/publish-cinematic-showcase
 ```
 
 If your PR shows merge conflicts in `src/scene/config.js`, keep the `modelUrls` arrays so both `.gltf` and `.glb` references can coexist.
+
+## Conflict check
+
+Run this before opening/updating your PR to make sure no merge markers were committed:
+
+```bash
+npm run check:conflicts
+```
