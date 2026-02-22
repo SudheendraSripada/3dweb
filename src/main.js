@@ -1,16 +1,23 @@
 import './style.css';
-import { CarShowcase } from './scene/CarShowcase.js';
-import { CARS } from './scene/config.js';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger.js';
+import { ShowcaseScene } from './components/ShowcaseScene.js';
+import { CAR_CATALOG } from './models/carCatalog.js';
+
+gsap.registerPlugin(ScrollTrigger);
+gsap.defaults({ ease: 'power2.out' });
 
 const picker = document.getElementById('car-picker');
 const carName = document.getElementById('car-name');
 const carTagline = document.getElementById('car-tagline');
 const specsName = document.getElementById('specs-name');
 const specGrid = document.getElementById('spec-grid');
+const helper = document.getElementById('picker-helper');
+const pickerError = document.getElementById('picker-error');
 
-const showcase = new CarShowcase({
+const scene = new ShowcaseScene({
   canvas: document.getElementById('showcase-canvas'),
-  onPartChange: (part) => {
+  onFeatureChange: (part) => {
     document.querySelectorAll('.story-panel').forEach((panel) => {
       panel.classList.toggle('active', panel.dataset.part === part);
     });
@@ -19,37 +26,56 @@ const showcase = new CarShowcase({
 
 function renderSpecGrid(specs) {
   specGrid.innerHTML = '';
-  Object.entries(specs).forEach(([label, value]) => {
+  for (const [label, value] of Object.entries(specs)) {
     const item = document.createElement('div');
     item.className = 'spec-item';
     item.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-    specGrid.appendChild(item);
+    specGrid.append(item);
+  }
+}
+
+function setSelectionUI(car) {
+  carName.textContent = car.name;
+  carTagline.textContent = car.tagline;
+  specsName.textContent = car.name;
+  renderSpecGrid(car.specs);
+}
+
+function setButtonsBusyState(busy) {
+  picker.querySelectorAll('.car-chip').forEach((chip) => {
+    chip.disabled = busy;
+    chip.classList.toggle('is-loading', busy);
   });
 }
 
-function createPicker() {
-  CARS.forEach((car, index) => {
+function createCarPicker() {
+  CAR_CATALOG.forEach((car) => {
     const button = document.createElement('button');
     button.className = 'car-chip';
+    button.type = 'button';
     button.textContent = car.name;
+
+    // Model loading is lazy and starts only after explicit user selection.
     button.addEventListener('click', async () => {
       picker.querySelectorAll('.car-chip').forEach((chip) => chip.classList.remove('active'));
       button.classList.add('active');
-
-      carName.textContent = car.name;
-      carTagline.textContent = car.tagline;
-      specsName.textContent = car.name;
-      renderSpecGrid(car.specs);
-
-      await showcase.loadCar(car);
+      helper.classList.add('is-hidden');
+      pickerError.textContent = 'Loading 3D model…';
+      setSelectionUI(car);
+      setButtonsBusyState(true);
+      try {
+        await scene.loadCar(car);
+        pickerError.textContent = '';
+      } catch (error) {
+        pickerError.textContent = 'Unable to load the selected 3D model. Check network/model URL and try again.';
+        console.error(error);
+      } finally {
+        setButtonsBusyState(false);
+      }
     });
 
-    picker.appendChild(button);
-
-    if (index === 0) {
-      button.click();
-    }
+    picker.append(button);
   });
 }
 
-createPicker();
+createCarPicker();

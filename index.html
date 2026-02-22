@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mustang Cinematic Showcase</title>
+    <title>Cinematic 3D Mustang Showcase</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,18 +17,20 @@
       <section class="hero" id="hero">
         <div class="hero__overlay"></div>
         <div class="hero__content">
-          <p class="eyebrow">Ford Performance</p>
-          <h1 class="title">Cinematic Mustang Studio</h1>
-          <p class="subtitle">Choose your machine and unveil every detail in a scroll-driven reveal.</p>
-
+          <p class="eyebrow">Ford Performance Studio</p>
+          <h1 class="title">Cinematic Mustang Showcase</h1>
+          <p class="subtitle">Select your Mustang, then scroll to unveil a studio-lit 3D reveal and part-by-part story.</p>
+          <p class="picker-title">Select Your Mustang</p>
           <div class="car-picker" id="car-picker"></div>
+          <p class="picker-helper" id="picker-helper">Choose a model to start loading the 3D experience.</p>
+          <p class="picker-error" id="picker-error" role="status" aria-live="polite"></p>
         </div>
       </section>
 
       <section class="viewer" id="viewer">
         <div class="hud">
-          <h2 id="car-name">Mustang</h2>
-          <p id="car-tagline">Select a model to begin reveal sequence.</p>
+          <h2 id="car-name">Select a Mustang</h2>
+          <p id="car-tagline">No model is loaded until you choose one above.</p>
         </div>
         <canvas id="showcase-canvas" aria-label="3D Mustang showcase"></canvas>
       </section>
@@ -36,26 +38,26 @@
       <section class="story" id="story">
         <article class="story-panel" data-part="engine">
           <h3>Engine</h3>
-          <p>Twin-airflow intake architecture and aggressive thermal management for consistent output.</p>
+          <p>Twin-airflow intake architecture and race thermal logic keep power consistent in hard sessions.</p>
         </article>
         <article class="story-panel" data-part="wheels">
           <h3>Wheels</h3>
-          <p>Forged wheels with race compounds maximize grip and rotational precision under load.</p>
+          <p>Forged wheel geometry and performance compounds maximize precision, grip, and turn-in confidence.</p>
         </article>
         <article class="story-panel" data-part="body">
           <h3>Body</h3>
-          <p>Aero-focused bodywork balances drag and downforce for relentless track confidence.</p>
+          <p>Aero-focused surfaces blend downforce and drag reduction for controlled high-speed stability.</p>
         </article>
         <article class="story-panel" data-part="interior">
           <h3>Interior</h3>
-          <p>Driver-first cockpit combines digital telemetry with tactile motorsport ergonomics.</p>
+          <p>Driver-centric cockpit ergonomics with telemetry-forward displays support fast decisions on track.</p>
         </article>
       </section>
 
       <section class="specs" id="specs">
         <div class="specs__content">
           <p class="eyebrow">Performance Data</p>
-          <h2 id="specs-name">Mustang GTD</h2>
+          <h2 id="specs-name">Waiting for Selection</h2>
           <div class="spec-grid" id="spec-grid"></div>
         </div>
       </section>
