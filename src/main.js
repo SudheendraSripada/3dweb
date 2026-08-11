@@ -13,6 +13,12 @@ const carTagline = document.getElementById('car-tagline');
 const specsName = document.getElementById('specs-name');
 const specGrid = document.getElementById('spec-grid');
 const helper = document.getElementById('picker-helper');
+const loadStatus = document.getElementById('load-status');
+
+function setLoadStatus(message) {
+  loadStatus.textContent = message;
+  loadStatus.classList.toggle('is-visible', Boolean(message));
+}
 
 const scene = new ShowcaseScene({
   canvas: document.getElementById('showcase-canvas'),
@@ -20,6 +26,9 @@ const scene = new ShowcaseScene({
     document.querySelectorAll('.story-panel').forEach((panel) => {
       panel.classList.toggle('active', panel.dataset.part === part);
     });
+  },
+  onStatusChange: (message) => {
+    setLoadStatus(message);
   },
 });
 

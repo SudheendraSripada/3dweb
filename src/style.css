@@ -77,6 +77,28 @@ body {
 
 .picker-helper.is-hidden { opacity: 0; }
 
+.load-status {
+  position: absolute;
+  inset: auto 1.5rem 1.5rem auto;
+  z-index: 3;
+  max-width: min(360px, 82vw);
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(7, 7, 7, 0.86);
+  color: #fff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.26s var(--ease-cinematic), transform 0.26s var(--ease-cinematic);
+}
+
+.load-status.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .car-chip {
   border: 1px solid #2a2a2a;
   background: rgba(15, 15, 15, 0.7);

@@ -15,9 +15,10 @@ gsap.registerPlugin(ScrollTrigger);
 const PARTS = ['engine', 'wheels', 'body', 'interior'];
 
 export class ShowcaseScene {
-  constructor({ canvas, onFeatureChange }) {
+  constructor({ canvas, onFeatureChange, onStatusChange }) {
     this.canvas = canvas;
     this.onFeatureChange = onFeatureChange;
+    this.onStatusChange = onStatusChange;
     this.clock = new THREE.Clock();
     this.mixers = [];
     this.modelCache = new Map();
@@ -79,6 +80,8 @@ export class ShowcaseScene {
     new RGBELoader().loadAsync('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr').then((hdr) => {
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.environment = hdr;
+    }).catch((error) => {
+      console.warn('HDR environment failed to load:', error);
     });
   }
 
@@ -137,6 +140,7 @@ export class ShowcaseScene {
 
   async loadCar(car) {
     this.controls.enabled = false;
+    this.onStatusChange?.('');
 
     if (this.activeModel) {
       this.scene.remove(this.activeModel);
@@ -145,6 +149,7 @@ export class ShowcaseScene {
     }
 
     let root = this.modelCache.get(car.id)?.clone(true);
+    let loadedModel = Boolean(root);
 
     if (!root) {
       try {
@@ -160,7 +165,10 @@ export class ShowcaseScene {
           action.play();
           this.mixers.push(mixer);
         }
-      } catch {
+        loadedModel = true;
+      } catch (error) {
+        console.error('Failed to load 3D model:', error);
+        this.onStatusChange?.('The 3D model could not be loaded. A simplified fallback scene is being shown instead.');
         root = this.createFallbackCar();
       }
     }
@@ -192,6 +200,10 @@ export class ShowcaseScene {
     this.currentCloth.material.opacity = 0.95;
     this.currentCloth.scale.set(1.08, 0.56, 0.82);
     this.currentCloth.position.set(0, 0.35, 0);
+
+    if (loadedModel) {
+      this.onStatusChange?.('');
+    }
 
     ScrollTrigger.refresh();
   }
