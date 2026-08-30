@@ -1,72 +1,109 @@
 import './style.css';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger.js';
-import { ShowcaseScene } from './components/ShowcaseScene.js';
-import { CAR_CATALOG } from './models/carCatalog.js';
+import { MustangStudioScene } from './components/MustangStudioScene.js';
 
-gsap.registerPlugin(ScrollTrigger);
-gsap.defaults({ ease: 'power2.out' });
+const canvas = document.getElementById('showcase-canvas');
+const scene = new MustangStudioScene(canvas);
 
-const picker = document.getElementById('car-picker');
-const carName = document.getElementById('car-name');
-const carTagline = document.getElementById('car-tagline');
-const specsName = document.getElementById('specs-name');
-const specGrid = document.getElementById('spec-grid');
-const helper = document.getElementById('picker-helper');
-const loadStatus = document.getElementById('load-status');
+// UI DOM Elements
+const dragHandle = document.getElementById('drag-handle');
+const arcPath = document.getElementById('arc-path');
+const arcActivePath = document.getElementById('arc-active-path');
+const heroTitleGroup = document.getElementById('hero-title-group');
+const heroDesc = document.getElementById('hero-desc');
+const revealedGroup = document.getElementById('revealed-group');
+const sliderContainer = document.getElementById('slider-container');
 
-function setLoadStatus(message) {
-  loadStatus.textContent = message;
-  loadStatus.classList.toggle('is-visible', Boolean(message));
+let isDragging = false;
+let currentProgress = 0; // 0 to 1
+let pathTotalLength = 0;
+
+if (arcPath) {
+  pathTotalLength = arcPath.getTotalLength();
+  arcActivePath.style.strokeDasharray = `${pathTotalLength}`;
+  arcActivePath.style.strokeDashoffset = `${pathTotalLength}`;
 }
 
-const scene = new ShowcaseScene({
-  canvas: document.getElementById('showcase-canvas'),
-  onFeatureChange: (part) => {
-    document.querySelectorAll('.story-panel').forEach((panel) => {
-      panel.classList.toggle('active', panel.dataset.part === part);
-    });
-  },
-  onStatusChange: (message) => {
-    setLoadStatus(message);
-  },
-});
+// Calculate handle position along SVG arc path given progress (0..1)
+function updateHandlePosition(progress) {
+  currentProgress = Math.max(0, Math.min(1, progress));
 
-function renderSpecGrid(specs) {
-  specGrid.innerHTML = '';
-  for (const [label, value] of Object.entries(specs)) {
-    const item = document.createElement('div');
-    item.className = 'spec-item';
-    item.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-    specGrid.append(item);
+  if (arcPath) {
+    const point = arcPath.getPointAtLength(currentProgress * pathTotalLength);
+    // Convert SVG point coordinates to percentage inside container
+    const svgBBox = { width: 600, height: 300 };
+    const leftPercent = (point.x / svgBBox.width) * 100;
+    const topPercent = (point.y / svgBBox.height) * 100;
+
+    dragHandle.style.left = `${leftPercent}%`;
+    dragHandle.style.top = `${topPercent}%`;
+
+    arcActivePath.style.strokeDashoffset = `${pathTotalLength * (1 - currentProgress)}`;
+  }
+
+  // Update 3D Scene
+  scene.setRevealProgress(currentProgress);
+
+  // Update UI Elements opacity & transforms based on progress
+  if (currentProgress > 0.15) {
+    heroTitleGroup.style.opacity = Math.max(0, 1 - (currentProgress - 0.15) * 3);
+    heroDesc.style.opacity = Math.max(0, 1 - (currentProgress - 0.15) * 3);
+  } else {
+    heroTitleGroup.style.opacity = 1;
+    heroDesc.style.opacity = 1;
+  }
+
+  if (currentProgress > 0.75) {
+    revealedGroup.style.opacity = (currentProgress - 0.75) * 4;
+    revealedGroup.style.transform = `translateY(${(1 - currentProgress) * 40}px)`;
+  } else {
+    revealedGroup.style.opacity = 0;
   }
 }
 
-function setSelectionUI(car) {
-  carName.textContent = car.name;
-  carTagline.textContent = car.tagline;
-  specsName.textContent = car.name;
-  renderSpecGrid(car.specs);
+// Drag functionality on Arc Slider
+function onPointerDown(e) {
+  isDragging = true;
+  dragHandle.classList.add('active');
+  e.preventDefault();
 }
 
-function createCarPicker() {
-  CAR_CATALOG.forEach((car) => {
-    const button = document.createElement('button');
-    button.className = 'car-chip';
-    button.type = 'button';
-    button.textContent = car.name;
+function onPointerMove(e) {
+  if (!isDragging) return;
 
-    // Model loading is lazy and starts only after explicit user selection.
-    button.addEventListener('click', async () => {
-      picker.querySelectorAll('.car-chip').forEach((chip) => chip.classList.remove('active'));
-      button.classList.add('active');
-      helper.classList.add('is-hidden');
-      setSelectionUI(car);
-      await scene.loadCar(car);
-    });
+  const rect = sliderContainer.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 
-    picker.append(button);
-  });
+  // Horizontal position ratio across the arc (0 at left, 1 at right)
+  const xRatio = (clientX - rect.left) / rect.width;
+  updateHandlePosition(xRatio);
 }
 
-createCarPicker();
+function onPointerUp() {
+  isDragging = false;
+  dragHandle.classList.remove('active');
+}
+
+dragHandle.addEventListener('mousedown', onPointerDown);
+dragHandle.addEventListener('touchstart', onPointerDown, { passive: false });
+
+window.addEventListener('mousemove', onPointerMove);
+window.addEventListener('touchmove', onPointerMove);
+
+window.addEventListener('mouseup', onPointerUp);
+window.addEventListener('touchend', onPointerUp);
+
+// Wheel / Scroll event to drive reveal
+window.addEventListener('wheel', (e) => {
+  const delta = e.deltaY * 0.0008;
+  updateHandlePosition(currentProgress + delta);
+});
+
+// Initialize at 0
+updateHandlePosition(0);
+
+// Animation Loop
+function animate() {
+  requestAnimationFrame(animate);
+  scene.render();
+}
+animate();
